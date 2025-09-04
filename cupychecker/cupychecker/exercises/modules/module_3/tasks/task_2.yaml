@@ -1,0 +1,50 @@
+id: "1"
+description: "Визуализация plotly"
+precode: |
+  import pandas as pd
+  df = # Ваш код
+reference: |
+  import seaborn as sns
+  import matplotlib.pyplot as plt
+  import pandas as pd
+  import numpy as np
+
+  url = "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
+  df = pd.read_csv(url)
+
+  fig = px.scatter(df
+                  , x="total_bill"
+                  , y="tip"
+                  , color="sex"
+                  , title="Зависимость чаевых от суммы счета"
+                  )
+  fig.show()
+checks:
+  - type: call
+    expected:
+      func: "scatter"
+      args:
+        - ["x", "total_bill"]
+    message: >
+      Расположите `total_bill` на оси X
+  - type: call
+    expected:
+      func: "scatter"
+      args:
+        - ["y", "tip"]
+    message: >
+      Расположите `tip` на оси Y
+  - type: call
+    expected:
+      func: "scatter"
+      args:
+        - ["color", "sex"]
+    message: >
+      Добавьте разрез по полю `sex`
+  - type: call
+    expected:
+      func: "scatter"
+      args:
+        - ["title", "Зависимость чаевых от суммы счета"]
+    message: >
+      Добавьте подпись для графика: Зависимость чаевых от суммы счета

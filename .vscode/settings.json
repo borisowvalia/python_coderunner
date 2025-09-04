@@ -1,0 +1,5 @@
+{
+    "yaml.schemas": {
+        "cmake-tools-schema://schemas/variants-schema.json": "file:///Users/valentin.borisov/Documents/ai_projects/python_coderunner/exercises/modules/module_1/tasks/task_1.yaml"
+    }
+}

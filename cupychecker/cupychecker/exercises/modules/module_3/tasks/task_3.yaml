@@ -1,0 +1,22 @@
+id: "1"
+description: "API"
+precode: |
+  import pandas as pd
+  df = # Ваш код
+reference: |
+  import requests
+
+  base_url = 'https://openlibrary.org'
+  endpoint = '/people/cu_labs/lists/OL300035L/seeds.json'
+
+  response = requests.get(base_url + endpoint)
+checks:
+  - type: call
+    expected:
+      func: "get"
+      args:
+        - "base_url + endpoint"
+  - type: var
+    expected:
+      var: "endpoint"
+      value: "/people/cu_labs/lists/OL300035L/seeds.json"

@@ -1,0 +1,29 @@
+Metadata-Version: 2.4
+Name: cupychecker
+Version: 0.1.0
+Summary: Простой пример Python-пакета
+Home-page: https://github.com/username/my_package
+Author: Your Name
+Author-email: your@email.com
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+
+# my_package
+
+Простой пример Python-пакета, который выводит приветствие.
+
+## Пример использования
+
+```python
+from my_package import say_hello
+
+print(say_hello("World"))
+```
+
+### **LICENSE**
+```text
+MIT License
+```

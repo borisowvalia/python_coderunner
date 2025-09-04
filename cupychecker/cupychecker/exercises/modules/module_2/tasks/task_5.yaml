@@ -1,0 +1,69 @@
+id: "1"
+description: "Студент должен вывести датафрейм с колонками `a` и `b`"
+precode: |
+  import pandas as pd
+
+  client_list = [111,112,113,114,115,116,117,118,119,120]
+  points_list = [1,2,3,4,3,3,2,1,2,3]
+  pay_list = [150,290,1000,1200,900,850,300,2000,2100,960]
+  date_pay_list = ['2025-01-06','2025-02-06','2025-01-15','2025-02-01','2025-01-13','2025-01-22','2025-01-06','2025-02-08','2025-02-09','2025-02-03']
+  comment_list = ['89169999999', 'dd15@gmail.com', '-', '--', '89179999999','ss13@gmail.com','sd1@gmail.com','Progr1','Progr2','Progr3']
+  dict_data = {  'id_client':client_list
+            , 'id_point': points_list
+            , 'amt_pay': pay_list
+            , 'date_pay': date_pay_list
+            , 'comment': comment_list
+            }
+
+  df = pd.DataFrame(dict_data)
+  df.set_index('id_client', inplace = True)
+
+  # Ваш код
+reference: |
+  import pandas as pd
+
+  client_list = [111,112,113,114,115,116,117,118,119,120]
+  points_list = [1,2,3,4,3,3,2,1,2,3]
+  pay_list = [150,290,1000,1200,900,850,300,2000,2100,960]
+  date_pay_list = ['2025-01-06','2025-02-06','2025-01-15','2025-02-01','2025-01-13','2025-01-22','2025-01-06','2025-02-08','2025-02-09','2025-02-03']
+  comment_list = ['89169999999', 'dd15@gmail.com', '-', '--', '89179999999','ss13@gmail.com','sd1@gmail.com','Progr1','Progr2','Progr3']
+  dict_data = {  'id_client':client_list
+            , 'id_point': points_list
+            , 'amt_pay': pay_list
+            , 'date_pay': date_pay_list
+            , 'comment': comment_list
+            }
+
+  df = pd.DataFrame(dict_data)
+  df.set_index('id_client', inplace = True)
+
+  df['date_pay'] = pd.to_datetime(df['date_pay'])
+  df['month_int'] = df['date_pay'].dt.month
+  df['month_dat'] = df['date_pay'].dt.to_period('M').dt.to_timestamp()
+
+  df.head(3)
+checks:
+  - type: call
+    expected:
+      func: "to_datetime"
+      args:
+        - "df['date_pay']"
+  - type: call
+    expected:
+      func: "to_period"
+      args:
+        - "M"
+  - type: call
+    expected:
+      func: "to_timestamp"
+  - type: call
+    expected:
+      func: "head"
+      args:
+        - 3
+  - type: contains
+    expected:
+      code: >
+        dt.month
+    message: >
+      Приведите дату к месяцу с помощью `dt.month`

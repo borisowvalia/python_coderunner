@@ -1,0 +1,48 @@
+id: "1"
+description: "Визуализация seaborn"
+precode: |
+  import pandas as pd
+  df = # Ваш код
+reference: |
+  import seaborn as sns
+  import matplotlib.pyplot as plt
+  import pandas as pd
+  import numpy as np
+
+  url = "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv"
+  df = pd.read_csv(url)
+
+  sns.histplot(df['total_bill'], bins=20, kde=True)
+  plt.title("Распределение счетов")
+  plt.xlabel("Сумма счета")
+  plt.ylabel("Частота")
+  plt.show()
+checks:
+  - type: call
+    expected:
+      func: "histplot"
+      args:
+        - "df['total_bill']"
+        - ["bins", 20]
+  - type: call
+    expected:
+      func: "title"
+      args:
+        - "Распределение счетов"
+    message: "Подпишите график: `Распределение счетов`"
+  - type: call
+    expected:
+      func: "xlabel"
+      args:
+        - "Сумма счета"
+    message: "Подпишите ось X"
+  - type: call
+    expected:
+      func: "ylabel"
+      args:
+        - "Частота"
+    message: "Подпишите ось Y"
+  - type: call
+    expected:
+      func: "show"
+    message: "Выведите график"
