@@ -1,13 +1,40 @@
 import requests
 
-from .task_loader import load
+from .task_loader import load_local, load_remote
 from .helpers import TestHelper
 
 
-def check_result(code: str, stdout: str, module: int, task: int):
-    task_config = load(module=module, task=task)
+def run_code(code, host='http://localhost:8000'):
+    """
+    Запуск кода на Runner
+    """
+    endpoint = '/run'
+    response = requests.post(
+        host + endpoint,
+        json={
+            'code': f'{code}'
+        }
+    )
+    response.raise_for_status()
+
+    return response.json()
+
+
+def check_result(code: str, stdout: str, module: int, task: int, host=None):
+    """
+    Проверка результата
+    """
+
+    if host:
+        # Если хост указан, то забираем проверки через API
+        task_config = load_remote(module=module, task=task, host=host, )
+    else:
+        # Иначе используем встроенные проверки
+        task_config = load_local(module=module, task=task)
+    
     _test = TestHelper(code=code, stdout=stdout)
 
+    # Итеративно выполняем каждую проверку
     for check in task_config.get('checks'):
         if 'message' in check:
             message = check['message']
@@ -54,24 +81,3 @@ def check_result(code: str, stdout: str, module: int, task: int):
 
     return True
 
-
-def run_code(code, host='http://localhost:8000/run'):
-    response = requests.post(
-        host,
-        json={
-            'code': f'{code}'
-        }
-    )
-    response.raise_for_status()
-
-    return response.json()
-
-
-def check(code: str, module: int, task: int, host='http://localhost:8000/run'):
-    runner_result = run_code(code=code, host=host)
-    return check_result(
-        code,
-        runner_result.get('stdout'),
-        module=module,
-        task=task
-    )

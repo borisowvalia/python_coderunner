@@ -11,16 +11,4 @@ cupychecker.egg-info/PKG-INFO
 cupychecker.egg-info/SOURCES.txt
 cupychecker.egg-info/dependency_links.txt
 cupychecker.egg-info/top_level.txt
-cupychecker/exercises/modules/module_1/cheatsheet.yaml
 cupychecker/exercises/modules/module_1/tasks/task_1.yaml
-cupychecker/exercises/modules/module_1/tasks/task_2.yaml
-cupychecker/exercises/modules/module_1/tasks/task_3.yaml
-cupychecker/exercises/modules/module_2/tasks/task_1.yaml
-cupychecker/exercises/modules/module_2/tasks/task_2.yaml
-cupychecker/exercises/modules/module_2/tasks/task_3.yaml
-cupychecker/exercises/modules/module_2/tasks/task_4.yaml
-cupychecker/exercises/modules/module_2/tasks/task_5.yaml
-cupychecker/exercises/modules/module_2/tasks/task_6.yaml
-cupychecker/exercises/modules/module_3/tasks/task_1.yaml
-cupychecker/exercises/modules/module_3/tasks/task_2.yaml
-cupychecker/exercises/modules/module_3/tasks/task_3.yaml

@@ -1,7 +1,8 @@
+# pytest: disable=collection
 import ast
 
 
-class TestHelper():
+class CodeHelper():  # noqa: F401
     def __init__(self, code: str, stdout: str):
         self.code = code
         self.stdout = stdout
@@ -133,68 +134,88 @@ class TestHelper():
         except SyntaxError as err:
             return err
 
-        assignments = {}
+        # Вспомогательная функция:
+        # из любого node (Attribute / Call / Subscript / Name)
+        # собирает "цепочку" имён слева направо
+        def extract_chain(node):
+            if isinstance(node, ast.Attribute):
+                return extract_chain(node.value) + [node.attr]
+            if isinstance(node, ast.Subscript):
+                return extract_chain(node.value)
+            if isinstance(node, ast.Call):
+                return extract_chain(node.func)
+            if isinstance(node, ast.Name):
+                return [node.id]
+            try:
+                return [ast.unparse(node)]
+            except Exception:
+                return []
+
+        # Все включения функции
+        candidates = []  # список (node, chain, full)
 
         for node in ast.walk(tree):
             if isinstance(node, ast.Call):
-                if isinstance(node.func, ast.Name):
-                    name = node.func.id
-                elif isinstance(node.func, ast.Attribute):
-                    name = node.func.attr
-                else:
-                    name = None
+                chain = extract_chain(node.func)
+                if chain and (chain[-1] == func_name or ".".join(chain).endswith(func_name)):
+                    candidates.append((node, chain, ".".join(chain)))
+            elif isinstance(node, ast.Attribute):
+                chain = extract_chain(node)
+                if chain and (chain[-1] == func_name or ".".join(chain).endswith(func_name)):
+                    candidates.append((node, chain, ".".join(chain)))
 
-                if name == func_name:
-                    assignments[func_name] = node
+        if not candidates:
+            return msg or f"Не найден вызов функции `{func_name}`"
 
-        if func_name not in assignments:
-            return msg or f"Не найден вызов функции `{func_name}`" 
-        elif func_name in assignments and expected_args is None:
+        # Если аргументы не нужны — достаточно факта наличия
+        if expected_args is None:
             return True
-        elif func_name in assignments and expected_args is not None:
-            call_kwargs = []
-            call_args = []
-            node = assignments[func_name]
 
-            # Позиционные аргументы
+        # Проверяем каждый кандидат, ищем совпадение
+        for node, chain, full in candidates:
+            if not isinstance(node, ast.Call):
+                # нашли только атрибут без вызова → пропускаем
+                continue
+
+            # Отдельно обрабатываем позиционные и именованные аргументы
+            pos_args, kw_args = [], []
             for arg in node.args:
                 try:
-                    value = ast.literal_eval(arg)  # пробуем как литерал
-                    if not (isinstance(value, int) or isinstance(value, float)):
-                        value = value.replace(" ", "")
+                    val = ast.literal_eval(arg)
+                    if isinstance(val, str):
+                        val = val.replace(" ", "")
                 except Exception:
-                    value = ast.unparse(arg).replace(" ", "")  # иначе оставляем как код
-                call_kwargs.append(value)
-            # Именованные аргументы
+                    val = ast.unparse(arg).replace(" ", "")
+                pos_args.append(val)
+
             for kw in node.keywords:
                 try:
-                    value = ast.literal_eval(kw.value)
-                    if not (isinstance(value, int) or isinstance(value, float)):
-                        value = value.replace(" ", "")
+                    val = ast.literal_eval(kw.value)
+                    if isinstance(val, str):
+                        val = val.replace(" ", "")
                 except Exception:
-                    value = ast.unparse(kw.value).replace(" ", "")
-                call_kwargs.append((kw.arg, value))
+                    val = ast.unparse(kw.value).replace(" ", "")
+                kw_args.append((kw.arg, val))
 
-            # Готовим expected
-            strip_expected_args = []
-            for arg in expected_args:
-                if isinstance(arg, str):
-                    strip_expected_args.append(arg.replace(" ", ""))
-                elif isinstance(arg, list):
-                    if isinstance(arg[1], str):
-                        strip_expected_args.append((arg[0], arg[1].replace(" ", "")))
-                    else:
-                        strip_expected_args.append((arg[0], arg[1]))
+            combined = pos_args + kw_args
+
+            norm_expected = []
+            for a in expected_args:
+                if isinstance(a, str):
+                    norm_expected.append(a.replace(" ", ""))
+                elif isinstance(a, (list, tuple)) and len(a) == 2:
+                    name, val = a
+                    if isinstance(val, str):
+                        val = val.replace(" ", "")
+                    norm_expected.append((name, val))
                 else:
-                    strip_expected_args.append(arg)
+                    norm_expected.append(a)
 
-            # print(call_args + call_kwargs)
-            # print(strip_expected_args)
-
-            if set(strip_expected_args).issubset(set(call_args + call_kwargs)):
+            if set(norm_expected).issubset(set(combined)):
                 return True
-            else:
-                return msg or f"Функция `{func_name}` вызвана с аргументами {call_args + call_kwargs}, ожидаются {expected_args}"
+
+        # Если ни один кандидат не подошёл
+        return msg or f"Функция `{func_name}` вызвана, но ни один из её вызовов не соответствует {expected_args}"
 
     def output(self, expected_output: str, include=None, msg=None):
         """
@@ -231,3 +252,6 @@ class TestHelper():
             return msg or f"Ожидается {expected_code}"
 
         return True
+
+# Обратная совместимость - оставляем алиас
+TestHelper = CodeHelper

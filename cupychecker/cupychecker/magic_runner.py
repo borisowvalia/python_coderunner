@@ -9,24 +9,27 @@ from .checker import run_code, check_result
 
 @register_cell_magic
 def run(line, cell):
-    # Парсим неделю и номер задачи
-    args_list = shlex.split(line)
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--module', type=int, required=True)
-    parser.add_argument('--task', type=int, required=True)
-    parser.add_argument('--plot', action=argparse.BooleanOptionalAction)
-
+    # Пытаемся понять где живет runner для запуска кода и хранения проверок
     if os.getenv('PYRUNNER'):
         pyrunner_default_host = os.getenv('PYRUNNER')
     else:
-        pyrunner_default_host = 'http://localhost:8000/run'
+        pyrunner_default_host = 'http://localhost:8000'
 
+    # Парсим неделю и номер задачи
+    args_list = shlex.split(line)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--module', type=str, required=True)
+    parser.add_argument('--task', type=str, required=True)
+    parser.add_argument('--plot', action=argparse.BooleanOptionalAction)
     parser.add_argument('--pyrunner', type=str, required=False, default=pyrunner_default_host)
+
     args = parser.parse_args(args_list)
     print(args, end='\n')
 
+    # Запускаем код
     runner_result = run_code(code=cell, host=args.pyrunner)
 
+    # Выкидываем ошибку клиенту
     if runner_result.get('stderr') != '':
         return HTML(f"""
         <div style="
@@ -42,18 +45,23 @@ def run(line, cell):
         </div>
         """)
     else:
+        # Делаем проверки рехультата
         checker_result = check_result(
             code=cell,
             stdout=runner_result.get('stdout'),
             module=args.module,
-            task=args.task
+            task=args.task,
+            host=args.pyrunner # Отсюда заберем yaml проверок
         )
 
+        # Выводим stdout
+        # Если указан plot, то дополнительно строим график
         if args.plot:
             exec(cell)
         else:
             display(Markdown(f'```\n{runner_result.get('stdout')}\n```'))
 
+        # Если не прошли прверку, то сообщение об ошибке
         if checker_result is not True:
             return HTML(f"""
             <div style="
@@ -68,6 +76,7 @@ def run(line, cell):
                 ❌ Ошибка: {checker_result}
             </div>
             """)
+        # Иначе успех
         else:
             return HTML("""
         <div style="
