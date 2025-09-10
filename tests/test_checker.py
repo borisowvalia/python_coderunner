@@ -59,11 +59,9 @@ class TestRunCode:
 class TestCheckResult:
     """Тесты для функции check_result()"""
     
-    @patch('cupychecker.checker.load_local')
-    def test_check_result_local_success(self, mock_load_local):
-        """Тест успешной проверки с локальными конфигурациями"""
-        # Настраиваем мок для локальной загрузки
-        mock_load_local.return_value = {
+    def test_check_result_local_success(self):
+        """Тест успешной проверки с локальными конфигурациями (task_conf напрямую)"""
+        task_conf = {
             'checks': [
                 {
                     'type': 'var',
@@ -71,19 +69,14 @@ class TestCheckResult:
                 }
             ]
         }
-        
-        # Выполняем тест
-        result = check_result("x = 10", "", module=1, task=1)
-        
-        # Проверяем результат
+
+        result = check_result("x = 10", "", task_conf=task_conf)
+
         assert result is True
-        mock_load_local.assert_called_once_with(module=1, task=1)
     
-    @patch('cupychecker.checker.load_remote')
-    def test_check_result_remote_success(self, mock_load_remote):
-        """Тест успешной проверки с удаленными конфигурациями"""
-        # Настраиваем мок для удаленной загрузки
-        mock_load_remote.return_value = {
+    def test_check_result_remote_success(self):
+        """Тест успешной проверки с конфигурациями, полученными извне (эмуляция remote)"""
+        task_conf = {
             'checks': [
                 {
                     'type': 'var',
@@ -91,18 +84,14 @@ class TestCheckResult:
                 }
             ]
         }
-        
-        # Выполняем тест
-        result = check_result("x = 10", "", module=1, task=1, host='http://example.com')
-        
-        # Проверяем результат
+
+        result = check_result("x = 10", "", task_conf=task_conf, host='http://example.com')
+
         assert result is True
-        mock_load_remote.assert_called_once_with(module=1, task=1, host='http://example.com')
     
-    @patch('cupychecker.checker.load_local')
-    def test_check_result_var_failure(self, mock_load_local):
+    def test_check_result_var_failure(self):
         """Тест неудачной проверки переменной"""
-        mock_load_local.return_value = {
+        task_conf = {
             'checks': [
                 {
                     'type': 'var',
@@ -110,16 +99,15 @@ class TestCheckResult:
                 }
             ]
         }
-        
-        result = check_result("x = 5", "", module=1, task=1)
+
+        result = check_result("x = 5", "", task_conf=task_conf)
         
         assert isinstance(result, str)
         assert "было переписвоено значение 5" in result
     
-    @patch('cupychecker.checker.load_local')
-    def test_check_result_call_success(self, mock_load_local):
+    def test_check_result_call_success(self):
         """Тест успешной проверки вызова функции"""
-        mock_load_local.return_value = {
+        task_conf = {
             'checks': [
                 {
                     'type': 'call',
@@ -127,15 +115,14 @@ class TestCheckResult:
                 }
             ]
         }
-        
-        result = check_result("print(123)", "", module=1, task=1)
+
+        result = check_result("print(123)", "", task_conf=task_conf)
         
         assert result is True
     
-    @patch('cupychecker.checker.load_local')
-    def test_check_result_call_failure(self, mock_load_local):
+    def test_check_result_call_failure(self):
         """Тест неудачной проверки вызова функции"""
-        mock_load_local.return_value = {
+        task_conf = {
             'checks': [
                 {
                     'type': 'call',
@@ -143,16 +130,15 @@ class TestCheckResult:
                 }
             ]
         }
-        
-        result = check_result("x = 1", "", module=1, task=1)
+
+        result = check_result("x = 1", "", task_conf=task_conf)
         
         assert isinstance(result, str)
         assert "Не найден вызов функции" in result
     
-    @patch('cupychecker.checker.load_local')
-    def test_check_result_output_success(self, mock_load_local):
+    def test_check_result_output_success(self):
         """Тест успешной проверки вывода"""
-        mock_load_local.return_value = {
+        task_conf = {
             'checks': [
                 {
                     'type': 'output',
@@ -160,15 +146,14 @@ class TestCheckResult:
                 }
             ]
         }
-        
-        result = check_result("print('hello')", "hello", module=1, task=1)
+
+        result = check_result("print('hello')", "hello", task_conf=task_conf)
         
         assert result is True
     
-    @patch('cupychecker.checker.load_local')
-    def test_check_result_output_failure(self, mock_load_local):
+    def test_check_result_output_failure(self):
         """Тест неудачной проверки вывода"""
-        mock_load_local.return_value = {
+        task_conf = {
             'checks': [
                 {
                     'type': 'output',
@@ -176,16 +161,15 @@ class TestCheckResult:
                 }
             ]
         }
-        
-        result = check_result("print('world')", "world", module=1, task=1)
+
+        result = check_result("print('world')", "world", task_conf=task_conf)
         
         assert isinstance(result, str)
         assert "Фактический вывод" in result
     
-    @patch('cupychecker.checker.load_local')
-    def test_check_result_contains_success(self, mock_load_local):
+    def test_check_result_contains_success(self):
         """Тест успешной проверки содержания кода"""
-        mock_load_local.return_value = {
+        task_conf = {
             'checks': [
                 {
                     'type': 'contains',
@@ -193,15 +177,14 @@ class TestCheckResult:
                 }
             ]
         }
-        
-        result = check_result("import pandas as pd", "", module=1, task=1)
+
+        result = check_result("import pandas as pd", "", task_conf=task_conf)
         
         assert result is True
     
-    @patch('cupychecker.checker.load_local')
-    def test_check_result_contains_failure(self, mock_load_local):
+    def test_check_result_contains_failure(self):
         """Тест неудачной проверки содержания кода"""
-        mock_load_local.return_value = {
+        task_conf = {
             'checks': [
                 {
                     'type': 'contains',
@@ -209,16 +192,15 @@ class TestCheckResult:
                 }
             ]
         }
-        
-        result = check_result("import numpy as np", "", module=1, task=1)
+
+        result = check_result("import numpy as np", "", task_conf=task_conf)
         
         assert isinstance(result, str)
         assert "Ожидается" in result
     
-    @patch('cupychecker.checker.load_local')
-    def test_check_result_multiple_checks_all_pass(self, mock_load_local):
+    def test_check_result_multiple_checks_all_pass(self):
         """Тест множественных проверок - все проходят"""
-        mock_load_local.return_value = {
+        task_conf = {
             'checks': [
                 {
                     'type': 'var',
@@ -234,15 +216,14 @@ class TestCheckResult:
                 }
             ]
         }
-        
-        result = check_result("x = 10\nprint(x)", "10", module=1, task=1)
+
+        result = check_result("x = 10\nprint(x)", "10", task_conf=task_conf)
         
         assert result is True
     
-    @patch('cupychecker.checker.load_local')
-    def test_check_result_multiple_checks_first_fails(self, mock_load_local):
+    def test_check_result_multiple_checks_first_fails(self):
         """Тест множественных проверок - первая не проходит"""
-        mock_load_local.return_value = {
+        task_conf = {
             'checks': [
                 {
                     'type': 'var',
@@ -254,16 +235,15 @@ class TestCheckResult:
                 }
             ]
         }
-        
-        result = check_result("x = 5\nprint(x)", "5", module=1, task=1)
+
+        result = check_result("x = 5\nprint(x)", "5", task_conf=task_conf)
         
         assert isinstance(result, str)
         assert "было переписвоено значение 5" in result
     
-    @patch('cupychecker.checker.load_local')
-    def test_check_result_with_custom_messages(self, mock_load_local):
+    def test_check_result_with_custom_messages(self):
         """Тест с пользовательскими сообщениями об ошибках"""
-        mock_load_local.return_value = {
+        task_conf = {
             'checks': [
                 {
                     'type': 'var',
@@ -272,15 +252,14 @@ class TestCheckResult:
                 }
             ]
         }
-        
-        result = check_result("x = 5", "", module=1, task=1)
+
+        result = check_result("x = 5", "", task_conf=task_conf)
         
         assert result == 'Переменная x должна быть равна 10'
     
-    @patch('cupychecker.checker.load_local')
-    def test_check_result_output_with_include(self, mock_load_local):
+    def test_check_result_output_with_include(self):
         """Тест проверки вывода с параметром include"""
-        mock_load_local.return_value = {
+        task_conf = {
             'checks': [
                 {
                     'type': 'output',
@@ -288,15 +267,14 @@ class TestCheckResult:
                 }
             ]
         }
-        
-        result = check_result("print('hello world')", "hello world", module=1, task=1)
+
+        result = check_result("print('hello world')", "hello world", task_conf=task_conf)
         
         assert result is True
     
-    @patch('cupychecker.checker.load_local')
-    def test_check_result_call_without_args(self, mock_load_local):
+    def test_check_result_call_without_args(self):
         """Тест проверки вызова функции без аргументов"""
-        mock_load_local.return_value = {
+        task_conf = {
             'checks': [
                 {
                     'type': 'call',
@@ -304,7 +282,7 @@ class TestCheckResult:
                 }
             ]
         }
-        
-        result = check_result("print()", "", module=1, task=1)
+
+        result = check_result("print()", "", task_conf=task_conf)
         
         assert result is True

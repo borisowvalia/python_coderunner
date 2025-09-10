@@ -1,6 +1,5 @@
 import requests
 
-from .task_loader import load_local, load_remote
 from .helpers import TestHelper
 
 
@@ -20,22 +19,15 @@ def run_code(code, host='http://localhost:8000'):
     return response.json()
 
 
-def check_result(code: str, stdout: str, module: int, task: int, host=None):
+def check_result(code: str, stdout: str, task_conf: dict, host=None):
     """
     Проверка результата
     """
-
-    if host:
-        # Если хост указан, то забираем проверки через API
-        task_config = load_remote(module=module, task=task, host=host, )
-    else:
-        # Иначе используем встроенные проверки
-        task_config = load_local(module=module, task=task)
     
     _test = TestHelper(code=code, stdout=stdout)
 
     # Итеративно выполняем каждую проверку
-    for check in task_config.get('checks'):
+    for check in task_conf.get('checks'):
         if 'message' in check:
             message = check['message']
         else:

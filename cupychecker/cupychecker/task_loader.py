@@ -37,3 +37,11 @@ def load_remote(module: str, task: str, host: str):
 
     return response.json().get("data")
 
+
+def load_from_str(task_conf_str: str):
+    """
+    Парсинг YAML из строки
+    """
+    
+    return yaml.safe_load(task_conf_str)
+

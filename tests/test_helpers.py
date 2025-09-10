@@ -101,7 +101,7 @@ class TestTestHelperCall:
         helper = TestHelper("print(123)", "")
         result = helper.call("print", [123, ("sep", "\\t")])
         assert isinstance(result, str)
-        assert "не соответствует" in result
+        assert "Функция `print` вызвана с аргументами" in result
     
     def test_call_function_not_found(self):
         """Тест несуществующего вызова функции"""

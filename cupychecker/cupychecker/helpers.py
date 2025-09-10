@@ -215,7 +215,7 @@ class CodeHelper():  # noqa: F401
                 return True
 
         # Если ни один кандидат не подошёл
-        return msg or f"Функция `{func_name}` вызвана, но ни один из её вызовов не соответствует {expected_args}"
+        return msg or f"Функция `{func_name}` вызвана с аргументами {combined}, ожидаются {expected_args}"
 
     def output(self, expected_output: str, include=None, msg=None):
         """
